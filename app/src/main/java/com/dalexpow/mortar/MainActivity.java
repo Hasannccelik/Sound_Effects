@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.media.SoundPool.OnLoadCompleteListener;
@@ -36,6 +37,7 @@ import static com.dalexpow.mortar.R.raw;
 public class MainActivity extends AppCompatActivity {
     public Button press;
     public SoundPool soundPool;
+    public SoundPool s1,s2,s3;
     private int sound1,sound2,sound3,steal1,steal2,steal3,steal4;//değişkenler
     public Button tap;
     Boolean isSelected = false;
@@ -47,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
     public Button random;
     int[] sounds={raw.stealth1, raw.stealth2, raw.stealth3, raw.stealth4};//dizi değişkeni
     int[] twsound={raw.t1,raw.t2,raw.t3,raw.t4,raw.t5,raw.t6};
+    public int r1,r2,r3,r4,r5,r6;
     static int[] sm;// soundpool dizi tanımlaması
     MediaPlayer mp1,mp2;// media player tanımlaması
     final int[] steals= new int[4]; // 4 kapasiteli dizi değişkeni
@@ -56,6 +59,8 @@ public class MainActivity extends AppCompatActivity {
     long startTime=0;
     Button start,stop;
     long time,now,init;
+    Button newsong;
+
 
 
 
@@ -70,15 +75,20 @@ public class MainActivity extends AppCompatActivity {
         random = findViewById(id.random);
         timeflg = findViewById(id.timeflg);
         timer = new Timer();
-        final SeekBar change =(SeekBar) findViewById(R.id.change);
+        final SeekBar change =(SeekBar) findViewById(id.change);
         tap= findViewById(id.tap);
         handler = new Handler();//handlerımız
         display = (TextView) findViewById(id.display);
-        final ToggleButton passTog = (ToggleButton) findViewById(R.id.onoff);
+        start=findViewById(id.start);
+        newsong=findViewById(id.newsong);
+        s1=new SoundPool(1,AudioManager.STREAM_MUSIC,1);
+        s2=new SoundPool(1,AudioManager.STREAM_MUSIC,1);
+        s3=new SoundPool(1,AudioManager.STREAM_MUSIC,1);
 
 
 
-        //yepyeni timer denemesi
+
+       // yepyeni timer denemesi
      final Runnable timeRunnable=new Runnable() {
          @Override
          public void run() {
@@ -96,43 +106,42 @@ public class MainActivity extends AppCompatActivity {
      };
 
 //yeni timer denemesi
-        start=findViewById(R.id.start);
+
         start.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 Button start=(Button)view;
                 if (start.getText().equals("stop")){
                     handler.removeCallbacks(timeRunnable);
-                    start.setText("working");
+                    start.setText("stopping");
                 }
                 else{
                     startTime=System.currentTimeMillis();
                     handler.postDelayed(timeRunnable,0);
-                    timeflg.setText("stopping");
+                    timeflg.setText("working");
                 }
 
             }
         });
+        //basma durmuyor
         stop=findViewById(id.stop);
         stop.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 handler.removeCallbacks(timeRunnable);
 
+
+
             }
+
+
         });
-//        @Override
-//         public void onPause(){
-//            super.onPause();
-//            handler.removeCallbacks(timeRunnable);
-//            Button start =(Button)findViewById(R.id.start);
-//            timeflg.setText("wtf");
-//        }
 
 
 
 
 
+// milisaniye cinsinden timerım
         final Runnable updater = new Runnable() {
             @Override
             public void run() {
@@ -151,7 +160,6 @@ public class MainActivity extends AppCompatActivity {
         tap.setOnClickListener(new OnClickListener() {
          @Override
         public void onClick(View view) {
-
 
          }
 
@@ -188,13 +196,43 @@ public class MainActivity extends AppCompatActivity {
        });
 
 
+newsong.setOnTouchListener(new OnTouchListener() {
+    @Override
+    public boolean onTouch(View view, MotionEvent motionEvent) {
+        switch (motionEvent.getAction()){
+            case MotionEvent.ACTION_DOWN:
+                handler.removeCallbacks(updater);
+                handler.post(updater);
+                s1.play(1,1,1,1,0,1);
+                break;
+            case MotionEvent.ACTION_UP:
+                handler.removeCallbacks(updater);
+                time=0;
+
+                s1.autoPause();
+                s2.autoPause();
+                s3.play(1,1,1,3,0,1);
+                s3.autoPause();
 
 
 
+                break;
 
+    }
 
+        return false;
+    }
+});
 
-
+// longclick listener kullanımı
+newsong.setOnLongClickListener(new OnLongClickListener() {
+    @Override
+    public boolean onLongClick(View view) {
+        timeflg.setText("bas");
+        s2.play(1,1,1,2,-1,1);
+        return false;
+    }
+});
 
 //seekbar kullanımı alanı
         change.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -205,8 +243,25 @@ public class MainActivity extends AppCompatActivity {
                 change.setMax(5);
                 progressChangedValue = progress;
                 if (progress == 0){
-
-
+                    soundPool.play(r1,1,1,1,0,1);
+                }
+                if (progress==1){
+                    soundPool.play(r2,1,1,2,0,1);
+                }
+                if (progress==2){
+                    soundPool.play(r3,1,1,3,0,1);
+                }
+                if (progress==3){
+                    soundPool.play(r4,1,0,4,0,1);
+                }
+                if (progress==4){
+                    soundPool.play(r5,1,1,5,0,1);
+                }
+                if (progress==5){
+                    soundPool.play(r6,1,1,6,0,1);
+                }
+                else{
+                    soundPool.autoPause();
                 }
             }
 
@@ -214,12 +269,23 @@ public class MainActivity extends AppCompatActivity {
             public void onStartTrackingTouch(SeekBar seekBar) {
 
 
+
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                Toast.makeText(MainActivity.this, "Seek bar progress is :" + progressChangedValue,
-                        Toast.LENGTH_SHORT).show();
+
+               //pcv diye bir string oluşturuldu label yani textview e aktarıldı.
+                String pcv= Integer.toString(progressChangedValue);
+                timeflg.setText(pcv);
+
+            }
+
+        });
+        //click listener metodu
+        change.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
 
             }
         });
@@ -309,7 +375,7 @@ public class MainActivity extends AppCompatActivity {
                     .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                     .build();
             soundPool = new SoundPool.Builder()
-                    .setMaxStreams(7)
+                    .setMaxStreams(16)
                     .setAudioAttributes(audioAttributes)
                     .build();
         } else {
@@ -324,7 +390,7 @@ public class MainActivity extends AppCompatActivity {
                     .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                     .build();
             soundPool = new SoundPool.Builder()
-                    .setMaxStreams(7)
+                    .setMaxStreams(16)
                     .setAudioAttributes(audioAttributes)
                     .build();
         } else {
@@ -346,6 +412,19 @@ public class MainActivity extends AppCompatActivity {
         steal2=soundPool.load(this,raw.stealth2,0);
         steal3=soundPool.load(this,raw.stealth3,0);
         steal4=soundPool.load(this,raw.stealth4,0);
+
+        r1=soundPool.load(this,raw.t1,0);
+        r2=soundPool.load(this,raw.t2,0);
+        r3=soundPool.load(this,raw.t3,0);
+        r4=soundPool.load(this,raw.t4,0);
+        r5=soundPool.load(this,raw.t5,0);
+        r6=soundPool.load(this,raw.t6,0);
+
+        s1.load(this, raw.minigun_spinup,0);
+        s2.load(this,raw.minigun_spin,0);
+        s3.load(this,raw.minigun_spindown,0);
+
+
 
         final Random r = new Random();
         sm= new int[3];
